@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Checkout Page</title>
+  <style>
+    body {
+      font-family: Arial;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    button {
+      background: green;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: darkgreen;
+    }
+    #result {
+      margin-top: 15px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>💳 Checkout</h2>
+
+  <input id="phone" placeholder="Phone (2547XXXXXXXX)" />
+  <input id="amount" type="number" placeholder="Amount (KES)" />
+
+  <button onclick="pay()">Pay with M-Pesa</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function pay() {
+      const phone = document.getElementById("phone").value;
+      const amount = document.getElementById("amount").value;
+
+      document.getElementById("result").innerText = "Sending STK request...";
+
+      try {
+        const res = await fetch("http://localhost:3000/stk", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ phone, amount })
+        });
+
+        const data = await res.json();
+
+        document.getElementById("result").innerText =
+          JSON.stringify(data, null, 2);
+
+      } catch (err) {
+        document.getElementById("result").innerText =
+          "Error: " + err.message;
+      }
+    }
+  </script>
+
+</body>
+</html>
