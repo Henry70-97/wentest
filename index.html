@@ -1,57 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Checkout Page</title>
-  <style>
-    body {
-      font-family: Arial;
-      max-width: 400px;
-      margin: 50px auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-    }
-    button {
-      background: green;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background: darkgreen;
-    }
-    #result {
-      margin-top: 15px;
-      white-space: pre-wrap;
-    }
-  </style>
+  <title>Pay with M-Pesa</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+<body style="font-family: Arial; text-align: center; margin-top: 50px;">
 
-<body>
+  <h2>💳 Pay with M-Pesa</h2>
 
-  <h2>💳 Checkout</h2>
+  <input id="phone" placeholder="2547XXXXXXXX" 
+         style="padding:10px; width:250px; margin:10px;"><br>
 
-  <input id="phone" placeholder="Phone (2547XXXXXXXX)" />
-  <input id="amount" type="number" placeholder="Amount (KES)" />
+  <input id="amount" placeholder="Amount" 
+         style="padding:10px; width:250px; margin:10px;"><br>
 
-  <button onclick="pay()">Pay with M-Pesa</button>
+  <button onclick="pay()" 
+          style="padding:12px 20px; background:green; color:white; border:none;">
+    Pay Now
+  </button>
 
-  <div id="result"></div>
+  <p id="status"></p>
 
   <script>
     async function pay() {
       const phone = document.getElementById("phone").value;
       const amount = document.getElementById("amount").value;
+      const status = document.getElementById("status");
 
-      document.getElementById("result").innerText = "Sending STK request...";
+      status.innerText = "Processing payment...";
 
       try {
-        const res = await fetch("http://localhost:3000/stk", {
+        const res = await fetch("https://render-stk.onrender.com", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -61,12 +40,15 @@
 
         const data = await res.json();
 
-        document.getElementById("result").innerText =
-          JSON.stringify(data, null, 2);
+        if (data.url) {
+          status.innerText = "Redirecting to payment...";
+          window.location.href = data.url;
+        } else {
+          status.innerText = "Error: " + JSON.stringify(data);
+        }
 
       } catch (err) {
-        document.getElementById("result").innerText =
-          "Error: " + err.message;
+        status.innerText = "Failed to connect to server";
       }
     }
   </script>
