@@ -1,47 +1,419 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Pay Now</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>BestPay Pro | Trading & Investment Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .card { background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .sidebar { position: fixed; top: 0; left: 0; width: 280px; height: 100%; background: #1e293b; color: white; transform: translateX(-100%); transition: transform 0.3s; z-index: 1000; overflow-y: auto; }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: #cbd5e1; text-decoration: none; border-radius: 0.5rem; margin: 0.25rem 0; cursor: pointer; }
+        .sidebar a:hover, .sidebar a.active { background: #4f46e5; color: white; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+        .overlay.active { display: block; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 1rem; padding: 1.5rem; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #1f2937; color: white; padding: 12px 20px; border-radius: 8px; z-index: 3000; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .btn-primary { background: #4f46e5; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.2s; cursor: pointer; }
+        .btn-primary:hover { background: #4338ca; transform: translateY(-1px); }
+        .btn-danger { background: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; }
+        .btn-success { background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; }
+        .balance-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 1rem; padding: 1rem; }
+        .trade-card { border-left: 4px solid #4f46e5; transition: all 0.2s; margin-bottom: 0.5rem; padding: 0.75rem; background: #f8fafc; border-radius: 0.5rem; }
+        .trade-card.win { border-left-color: #10b981; background: #f0fdf4; }
+        .trade-card.loss { border-left-color: #ef4444; background: #fef2f2; }
+        @media (max-width: 768px) { .sidebar { width: 100%; } }
+        .deposit-btn { cursor: pointer; transition: all 0.2s; }
+        .deposit-btn:hover { transform: translateY(-2px); }
+        .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #4f46e5; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
+    <!-- Sidebar -->
+    <div id="overlay" class="overlay"></div>
+    <aside id="sidebar" class="sidebar">
+        <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-chart-line text-indigo-400 text-xl"></i>
+                <span class="font-bold text-lg">BestPay Pro</span>
+            </div>
+            <button id="closeSidebarBtn" class="text-white text-xl"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="p-3">
+            <a data-section="trading"><i class="fas fa-chart-line"></i> Trading</a>
+            <a data-section="investments"><i class="fas fa-chart-pie"></i> Investments</a>
+            <a data-section="deposits"><i class="fas fa-wallet"></i> Deposits</a>
+            <a data-section="withdrawals"><i class="fas fa-hand-holding-usd"></i> Withdrawals</a>
+            <a data-section="balances"><i class="fas fa-coins"></i> Balances</a>
+            <a data-section="transactions"><i class="fas fa-exchange-alt"></i> Transactions</a>
+            <a data-section="referrals"><i class="fas fa-users"></i> Referrals</a>
+            <a data-section="leaderboard"><i class="fas fa-trophy"></i> Leaderboard</a>
+            <a data-section="streak"><i class="fas fa-fire"></i> Daily Streak</a>
+            <a data-section="kyc"><i class="fas fa-id-card"></i> KYC</a>
+            <a data-section="support"><i class="fas fa-headset"></i> Support</a>
+            <a data-section="announcements"><i class="fas fa-bullhorn"></i> Announcements</a>
+            <a data-section="settings"><i class="fas fa-cog"></i> Settings</a>
+            <a data-section="admin" id="adminLink" style="display: none;"><i class="fas fa-shield-alt"></i> Admin Panel</a>
+        </nav>
+        <div class="p-4 border-t border-gray-700">
+            <button id="logoutBtn" class="flex items-center gap-2 text-red-400 w-full p-2 rounded hover:bg-red-900/30"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </aside>
 
-<h2>M-Pesa Payment</h2>
+    <!-- Main Content -->
+    <div class="ml-0">
+        <header class="bg-white shadow-sm sticky top-0 z-100 px-4 py-3 flex items-center gap-3">
+            <button id="hamburgerBtn" class="text-2xl"><i class="fas fa-bars"></i></button>
+            <h1 class="text-xl font-bold">BestPay Pro</h1>
+            <div class="flex-1"></div>
+            <div class="flex gap-2">
+                <button id="demoModeBtn" class="px-3 py-1 rounded-full text-sm bg-gray-200">🎮 Demo</button>
+                <button id="realModeBtn" class="px-3 py-1 rounded-full text-sm bg-indigo-600 text-white">💰 Real</button>
+            </div>
+            <div class="bg-indigo-100 px-3 py-1 rounded-full text-sm">
+                <i class="fas fa-user"></i> <span id="userName">Guest</span>
+            </div>
+        </header>
 
-<input id="phone" placeholder="2547XXXXXXXX"><br><br>
-<input id="amount" placeholder="Amount"><br><br>
+        <main class="container mx-auto px-4 py-6">
+            <!-- Login Screen -->
+            <div id="loginScreen" class="flex items-center justify-center min-h-screen">
+                <div class="card max-w-md w-full">
+                    <h2 class="text-2xl font-bold text-center mb-6">Welcome to BestPay Pro</h2>
+                    <div class="space-y-4">
+                        <input type="email" id="loginEmail" placeholder="Email" class="w-full border rounded-lg p-2">
+                        <input type="password" id="loginPassword" placeholder="Password" class="w-full border rounded-lg p-2">
+                        <button id="loginBtn" class="btn-primary w-full">Login</button>
+                        <hr>
+                        <input type="text" id="signupName" placeholder="Full Name" class="w-full border rounded-lg p-2">
+                        <input type="email" id="signupEmail" placeholder="Email" class="w-full border rounded-lg p-2">
+                        <input type="password" id="signupPassword" placeholder="Password" class="w-full border rounded-lg p-2">
+                        <button id="signupBtn" class="btn-success w-full">Create Account</button>
+                    </div>
+                </div>
+            </div>
 
-<button onclick="pay()">Pay</button>
+            <!-- Trading Section -->
+            <div id="trading" class="section">
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="card">
+                            <div class="text-center text-3xl font-bold text-indigo-600" id="livePrice">1.12345</div>
+                            <div class="text-sm text-gray-500 text-center">EUR/USD Live Price</div>
+                            <div class="h-64 bg-gray-100 rounded-lg mt-3 flex items-center justify-center">
+                                <i class="fas fa-chart-line text-4xl text-gray-400"></i>
+                                <span class="ml-2">Live Chart (simulated)</span>
+                            </div>
+                            <div id="activeTradesList" class="mt-4 space-y-2"></div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card text-center">
+                            <div class="text-sm text-gray-500">Balance</div>
+                            <div class="text-3xl font-bold text-green-600" id="balanceDisplay">$0.00</div>
+                            <button id="topUpBtn" class="mt-2 btn-primary text-sm"><i class="fas fa-plus"></i> Deposit</button>
+                        </div>
+                        <div class="card">
+                            <label class="font-bold">Stake Amount ($)</label>
+                            <div class="grid grid-cols-5 gap-2 mt-2">
+                                <button class="stake-preset p-2 bg-gray-100 rounded" data-stake="5">$5</button>
+                                <button class="stake-preset p-2 bg-gray-100 rounded" data-stake="10">$10</button>
+                                <button class="stake-preset p-2 bg-gray-100 rounded" data-stake="25">$25</button>
+                                <button class="stake-preset p-2 bg-gray-100 rounded" data-stake="50">$50</button>
+                                <button class="stake-preset p-2 bg-gray-100 rounded" data-stake="100">$100</button>
+                            </div>
+                            <input type="number" id="stakeAmount" class="w-full border rounded-lg p-2 mt-2" value="10" min="1">
+                            <label class="font-bold mt-3 block">Multiplier (1-10x)</label>
+                            <input type="range" id="multiplierSlider" min="1" max="10" step="0.5" value="2" class="w-full">
+                            <div class="flex justify-between text-sm">
+                                <span>1x</span><span id="multiplierValue">2.0x</span><span>10x</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 mt-4">
+                                <button id="callBtn" class="btn-success text-lg"><i class="fas fa-arrow-up"></i> CALL</button>
+                                <button id="putBtn" class="btn-danger text-lg"><i class="fas fa-arrow-down"></i> PUT</button>
+                            </div>
+                            <div class="mt-3">
+                                <div class="flex justify-between text-sm">
+                                    <span>Potential Profit:</span>
+                                    <span id="potentialProfit" class="text-green-600 font-bold">$0</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span>Potential Loss:</span>
+                                    <span id="potentialLoss" class="text-red-600 font-bold">$0</span>
+                                </div>
+                            </div>
+                            <button id="autoTradeBtn" class="w-full bg-amber-500 text-white py-2 rounded-lg mt-3">🤖 Auto Trade</button>
+                            <button id="stopAutoBtn" class="w-full bg-gray-500 text-white py-2 rounded-lg mt-1 hidden">⏹️ Stop Auto</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-<p id="status"></p>
+            <!-- Deposits Section with M-Pesa STK Push -->
+            <div id="deposits" class="section">
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-4">💎 Deposit Funds</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="depositMethodsList">
+                        <!-- M-Pesa STK Push -->
+                        <div class="deposit-method border rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition" data-method="mpesa-stk">
+                            <i class="fas fa-mobile-alt text-4xl text-green-600 mb-2"></i>
+                            <h3 class="font-bold">M-Pesa STK Push</h3>
+                            <p class="text-sm text-gray-600">Instant payment via M-Pesa</p>
+                        </div>
+                        <!-- Manual M-Pesa -->
+                        <div class="deposit-method border rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition" data-method="mpesa-manual">
+                            <i class="fas fa-mobile-alt text-4xl text-blue-600 mb-2"></i>
+                            <h3 class="font-bold">M-Pesa Manual</h3>
+                            <p class="text-sm text-gray-600">Pay via Till Number</p>
+                        </div>
+                        <!-- Crypto -->
+                        <div class="deposit-method border rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition" data-method="crypto">
+                            <i class="fab fa-bitcoin text-4xl text-orange-600 mb-2"></i>
+                            <h3 class="font-bold">Cryptocurrency</h3>
+                            <p class="text-sm text-gray-600">USDT, Bitcoin, Ethereum</p>
+                        </div>
+                        <!-- Bank Transfer -->
+                        <div class="deposit-method border rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition" data-method="bank">
+                            <i class="fas fa-university text-4xl text-gray-600 mb-2"></i>
+                            <h3 class="font-bold">Bank Transfer</h3>
+                            <p class="text-sm text-gray-600">Direct bank deposit</p>
+                        </div>
+                    </div>
+                    <button id="reportDepositBtn" class="btn-primary mt-4 w-full">📢 Report Pending Deposit</button>
+                    <div id="depositsList" class="mt-4 space-y-2"></div>
+                </div>
+            </div>
 
-<script>
-async function pay() {
-  const phone = document.getElementById("phone").value;
-  const amount = document.getElementById("amount").value;
+            <!-- M-Pesa STK Push Modal -->
+            <div id="mpesaStkModal" class="modal">
+                <div class="modal-content">
+                    <h3 class="text-xl font-bold mb-4">💳 M-Pesa STK Push</h3>
+                    <div class="space-y-3">
+                        <input type="number" id="mpesaAmount" placeholder="Amount (KES)" class="w-full border rounded-lg p-2">
+                        <input type="tel" id="mpesaPhone" placeholder="Phone Number (e.g., 2547XXXXXXXX)" class="w-full border rounded-lg p-2">
+                        <div id="mpesaLoading" class="hidden text-center py-2">
+                            <div class="loading-spinner"></div>
+                            <p class="text-sm mt-2">Processing payment request...</p>
+                        </div>
+                        <button id="initiateStkPushBtn" class="btn-success w-full">Send STK Push</button>
+                        <button id="closeMpesaModalBtn" class="btn-danger w-full mt-2">Cancel</button>
+                    </div>
+                </div>
+            </div>
 
-  document.getElementById("status").innerText = "Sending STK...";
+            <!-- Other Sections (simplified) -->
+            <div id="investments" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">📈 Investment Plans</h2><div id="investmentPlansList"></div><h3 class="text-lg font-bold mt-6">Your Active Investments</h3><div id="activeInvestmentsList"></div></div></div>
+            <div id="withdrawals" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">🏦 Withdrawals</h2><button id="requestWithdrawBtn" class="btn-primary">Request Withdrawal</button><div id="withdrawalsList" class="mt-4"></div></div></div>
+            <div id="balances" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">💰 Balance Overview</h2><div id="balancesDetails"></div></div></div>
+            <div id="transactions" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">📜 Transaction History</h2><div id="transactionsList"></div></div></div>
+            <div id="referrals" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">👥 Referral Program</h2><div id="referralLink"></div><button id="copyLinkBtn" class="btn-primary mt-2">Copy Link</button><div id="referredUsers"></div></div></div>
+            <div id="leaderboard" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">🏆 Top Traders</h2><div id="leaderboardList"></div></div></div>
+            <div id="streak" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">🔥 Daily Streak</h2><div id="streakGrid" class="grid grid-cols-7 gap-2"></div></div></div>
+            <div id="kyc" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">🪪 KYC Verification</h2><div>Status: <span id="kycStatus">unverified</span></div><input type="url" id="faceUrl" placeholder="Face Portrait URL" class="w-full border rounded p-2 mt-3"><input type="url" id="idUrl" placeholder="ID Document URL" class="w-full border rounded p-2 mt-2"><button id="submitKycBtn" class="btn-primary w-full mt-3">Submit KYC</button></div></div>
+            <div id="support" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">🎫 Support Tickets</h2><button id="newTicketBtn" class="btn-primary">New Ticket</button><div id="ticketsList" class="mt-4"></div></div></div>
+            <div id="announcements" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">📢 Announcements</h2><div id="announcementsList"></div></div></div>
+            <div id="settings" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">⚙️ Settings</h2><input type="text" id="displayName" placeholder="Full Name" class="w-full border rounded p-2"><button id="updateNameBtn" class="btn-primary w-full mt-2">Update Name</button></div></div>
+        </main>
+    </div>
 
-  try {
-    const res = await fetch("https://your-render-url.onrender.com/pay", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ phone, amount })
-    });
+    <!-- Modals -->
+    <div id="tradeConfirmModal" class="modal"><div class="modal-content"><h3 class="text-xl font-bold">Confirm Trade</h3><div id="confirmDetails"></div><div class="flex gap-3 mt-4"><button id="confirmTradeBtn" class="btn-success flex-1">Confirm</button><button id="cancelTradeBtn" class="btn-danger flex-1">Cancel</button></div></div></div>
+    <div id="withdrawModal" class="modal"><div class="modal-content"><h3 class="text-xl font-bold">Request Withdrawal</h3><input type="number" id="withdrawAmount" placeholder="Amount ($)" class="w-full border rounded p-2 mt-2"><select id="withdrawMethod" class="w-full border rounded p-2 mt-2"><option>Bank Transfer</option><option>M-Pesa</option><option>USDT</option></select><input type="text" id="withdrawDetails" placeholder="Account/Wallet Address" class="w-full border rounded p-2 mt-2"><div class="flex gap-3 mt-4"><button id="submitWithdrawBtn" class="btn-success flex-1">Submit</button><button id="closeWithdrawModalBtn" class="btn-danger flex-1">Cancel</button></div></div></div>
+    <div id="ticketModal" class="modal"><div class="modal-content"><h3 class="text-xl font-bold">New Support Ticket</h3><input type="text" id="ticketSubject" placeholder="Subject" class="w-full border rounded p-2"><textarea id="ticketMessage" placeholder="Message" rows="3" class="w-full border rounded p-2 mt-2"></textarea><div class="flex gap-3 mt-4"><button id="submitTicketBtn" class="btn-success flex-1">Submit</button><button id="closeTicketModalBtn" class="btn-danger flex-1">Cancel</button></div></div></div>
+    <div id="investModal" class="modal"><div class="modal-content"><h3 class="text-xl font-bold">Confirm Investment</h3><div id="investDetails"></div><div class="flex gap-3 mt-4"><button id="confirmInvestModalBtn" class="btn-success flex-1">Invest</button><button id="cancelInvestModalBtn" class="btn-danger flex-1">Cancel</button></div></div></div>
+    <div id="infoModal" class="modal"><div class="modal-content"><h3 id="infoTitle" class="text-xl font-bold">Info</h3><p id="infoMessage"></p><button id="closeInfoBtn" class="btn-primary mt-4 w-full">OK</button></div></div>
+    <div id="reportDepositModal" class="modal"><div class="modal-content"><h3 class="text-xl font-bold">Report Pending Deposit</h3><input type="number" id="reportAmount" placeholder="Amount ($)" class="w-full border rounded p-2"><input type="text" id="reportTxId" placeholder="Transaction ID/Reference" class="w-full border rounded p-2 mt-2"><button id="submitReportBtn" class="btn-primary w-full mt-3">Submit Report</button><button id="closeReportModalBtn" class="btn-danger w-full mt-2">Cancel</button></div></div></div>
 
-    const data = await res.json();
+    <script>
+        // Data storage
+        let currentUser = null;
+        let isRealMode = false;
+        let activeTrades = [];
+        let autoTradeInterval = null;
+        let currentPrice = 1.12345;
 
-    console.log(data);
+        // Initialize data
+        function initData() {
+            if (!localStorage.getItem('users')) {
+                const defaultUsers = {
+                    'user@bestpay.com': { id: 'user1', email: 'user@bestpay.com', name: 'Trader', password: 'pass123', role: 'user', realBalance: 1000, demoBalance: 10000, totalEarned: 0, kycStatus: 'unverified', referralCode: 'USER123', bonusGiven: false },
+                    'admin@bestpay.com': { id: 'admin1', email: 'admin@bestpay.com', name: 'Administrator', password: 'admin123', role: 'admin', realBalance: 0, demoBalance: 10000, totalEarned: 0, kycStatus: 'verified', referralCode: 'ADMIN123', bonusGiven: false }
+                };
+                localStorage.setItem('users', JSON.stringify(defaultUsers));
+            }
+            if (!localStorage.getItem('trades')) localStorage.setItem('trades', JSON.stringify([]));
+            if (!localStorage.getItem('transactions')) localStorage.setItem('transactions', JSON.stringify([]));
+            if (!localStorage.getItem('investments')) localStorage.setItem('investments', JSON.stringify([]));
+            if (!localStorage.getItem('withdrawals')) localStorage.setItem('withdrawals', JSON.stringify([]));
+            if (!localStorage.getItem('deposits')) localStorage.setItem('deposits', JSON.stringify([]));
+            if (!localStorage.getItem('tickets')) localStorage.setItem('tickets', JSON.stringify([]));
+            if (!localStorage.getItem('announcements')) {
+                localStorage.setItem('announcements', JSON.stringify([
+                    { id: '1', title: 'Welcome to BestPay Pro!', content: 'Start trading with our advanced platform. M-Pesa STK Push is now available!', createdAt: new Date().toISOString() }
+                ]));
+            }
+            if (!localStorage.getItem('investment_plans')) {
+                localStorage.setItem('investment_plans', JSON.stringify([
+                    { id: '1', name: 'Starter', amount: 50, dailyROI: 5, durationDays: 30, imageUrl: '' },
+                    { id: '2', name: 'Pro', amount: 200, dailyROI: 8, durationDays: 30, imageUrl: '' },
+                    { id: '3', name: 'Elite', amount: 500, dailyROI: 12, durationDays: 45, imageUrl: '' }
+                ]));
+            }
+        }
 
-    document.getElementById("status").innerText =
-      "Check your phone for STK prompt 📲";
+        // Helper functions
+        function showToast(msg, isError = false) { const toast = document.createElement('div'); toast.className = `toast ${isError ? 'bg-red-700' : 'bg-gray-800'}`; toast.innerText = msg; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
+        function showModal(id) { document.getElementById(id).classList.add('active'); }
+        function hideModal(id) { document.getElementById(id).classList.remove('active'); }
+        function showInfo(title, msg) { document.getElementById('infoTitle').innerText = title; document.getElementById('infoMessage').innerHTML = msg; showModal('infoModal'); }
 
-  } catch (err) {
-    document.getElementById("status").innerText = "Error connecting to server";
-  }
-}
-</script>
+        // M-Pesa STK Push Function
+        async function initiateMpesaStkPush(amount, phone) {
+            const loadingEl = document.getElementById('mpesaLoading');
+            const initBtn = document.getElementById('initiateStkPushBtn');
+            
+            loadingEl.classList.remove('hidden');
+            initBtn.disabled = true;
+            
+            try {
+                // Call your existing M-Pesa STK Push backend
+                const response = await fetch('/mpesa-stk.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: amount,
+                        phone: phone,
+                        accountRef: `DEPOSIT_${currentUser.id}_${Date.now()}`
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('STK Push sent! Check your phone to complete payment.');
+                    // Store pending deposit
+                    const pendingDeposit = {
+                        id: Date.now().toString(),
+                        userId: currentUser.id,
+                        amount: amount / 130, // Convert to USD
+                        method: 'M-Pesa STK',
+                        status: 'pending',
+                        checkoutRequestId: result.CheckoutRequestID,
+                        createdAt: new Date().toISOString()
+                    };
+                    const deposits = JSON.parse(localStorage.getItem('deposits'));
+                    deposits.push(pendingDeposit);
+                    localStorage.setItem('deposits', JSON.stringify(deposits));
+                    
+                    // Start polling for payment confirmation
+                    pollPaymentStatus(result.CheckoutRequestID, amount / 130);
+                    hideModal('mpesaStkModal');
+                } else {
+                    showToast(result.error || 'STK Push failed. Try again.', true);
+                }
+            } catch (error) {
+                console.error('STK Push error:', error);
+                showToast('Network error. Please try again.', true);
+            } finally {
+                loadingEl.classList.add('hidden');
+                initBtn.disabled = false;
+            }
+        }
 
-</body>
-</html>
+        // Poll payment status
+        async function pollPaymentStatus(checkoutRequestId, amountUSD) {
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/mpesa/stkquery.js?checkoutRequestId=${checkoutRequestId}`);
+                    const result = await response.json();
+                    
+                    if (result.ResultCode === 0) {
+                        // Payment successful
+                        clearInterval(interval);
+                        
+                        // Update user balance
+                        const users = JSON.parse(localStorage.getItem('users'));
+                        if (isRealMode) currentUser.realBalance += amountUSD;
+                        else currentUser.demoBalance += amountUSD;
+                        users[currentUser.email] = currentUser;
+                        localStorage.setItem('users', JSON.stringify(users));
+                        
+                        // Update deposit status
+                        const deposits = JSON.parse(localStorage.getItem('deposits'));
+                        const deposit = deposits.find(d => d.checkoutRequestId === checkoutRequestId);
+                        if (deposit) {
+                            deposit.status = 'completed';
+                            localStorage.setItem('deposits', JSON.stringify(deposits));
+                        }
+                        
+                        // Add transaction
+                        const transactions = JSON.parse(localStorage.getItem('transactions'));
+                        transactions.push({
+                            id: Date.now().toString(),
+                            userId: currentUser.id,
+                            type: 'deposit',
+                            amount: amountUSD,
+                            description: `M-Pesa deposit of $${amountUSD.toFixed(2)}`,
+                            timestamp: new Date().toISOString(),
+                            status: 'completed'
+                        });
+                        localStorage.setItem('transactions', JSON.stringify(transactions));
+                        
+                        showToast(`$${amountUSD.toFixed(2)} deposited successfully!`);
+                        loadUserData();
+                        updateDepositsPage();
+                        updateTransactionsPage();
+                    } else if (result.ResultCode !== 1037) { // 1037 = pending
+                        clearInterval(interval);
+                        showToast('Payment failed or expired. Please contact support.', true);
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 5000); // Check every 5 seconds
+            
+            // Stop polling after 2 minutes
+            setTimeout(() => clearInterval(interval), 120000);
+        }
+
+        // Authentication
+        function login(email, password) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users[email];
+            if (user && user.password === password) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                showToast(`Welcome back, ${user.name}!`);
+                document.getElementById('loginScreen').style.display = 'none';
+                document.querySelectorAll('.section').forEach(s => s.classList.add('active'));
+                loadUserData();
+                showSection('trading');
+                return true;
+            }
+            showInfo('Login Failed', 'Invalid email or password');
+            return false;
+        }
+
+        function signup(email, password, name) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            if (users[email]) { showInfo('Error', 'Email already exists'); return false; }
+            const newUser = { id: Date.now().toString(), email, name, password, role: 'user', realBalance: 0, demoBalance: 10000, totalEarned: 0, kycStatus: 'unverified', referralCode: email.slice(0, 8).toUpperCase(), bonusGiven: false };
+            users[email] = newUser;
+            localStorage.setItem('users', JSON.stringify(users));
+            currentUser = newUser;
+            localStorage.setItem('currentUser', JSON.stringify(newUser));
+            showToast('Account created successfully!');
+            document.getElementById('loginScreen').style.display = 'none';
+            document.querySelectorAll('.section').forEach(s => s.classList.add('active'));
+            loadUserData();
+            showSection('trading
