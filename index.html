@@ -27,15 +27,14 @@
         .btn-primary:hover { background: #4338ca; transform: translateY(-1px); }
         .btn-danger { background: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; }
         .btn-success { background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; }
-        .balance-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 1rem; padding: 1rem; }
+        .btn-warning { background: #f59e0b; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; }
         .trade-card { border-left: 4px solid #4f46e5; transition: all 0.2s; margin-bottom: 0.5rem; padding: 0.75rem; background: #f8fafc; border-radius: 0.5rem; }
         .trade-card.win { border-left-color: #10b981; background: #f0fdf4; }
         .trade-card.loss { border-left-color: #ef4444; background: #fef2f2; }
         @media (max-width: 768px) { .sidebar { width: 100%; } }
-        .deposit-btn { cursor: pointer; transition: all 0.2s; }
-        .deposit-btn:hover { transform: translateY(-2px); }
         .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #4f46e5; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .admin-badge { background: #ef4444; color: white; padding: 2px 8px; border-radius: 999px; font-size: 10px; margin-left: 8px; }
     </style>
 </head>
 <body>
@@ -63,7 +62,7 @@
             <a data-section="support"><i class="fas fa-headset"></i> Support</a>
             <a data-section="announcements"><i class="fas fa-bullhorn"></i> Announcements</a>
             <a data-section="settings"><i class="fas fa-cog"></i> Settings</a>
-            <a data-section="admin" id="adminLink" style="display: none;"><i class="fas fa-shield-alt"></i> Admin Panel</a>
+            <a data-section="admin" id="adminLink" style="display: none;"><i class="fas fa-shield-alt"></i> Admin Panel <span class="admin-badge">ADMIN</span></a>
         </nav>
         <div class="p-4 border-t border-gray-700">
             <button id="logoutBtn" class="flex items-center gap-2 text-red-400 w-full p-2 rounded hover:bg-red-900/30"><i class="fas fa-sign-out-alt"></i> Logout</button>
@@ -82,6 +81,7 @@
             </div>
             <div class="bg-indigo-100 px-3 py-1 rounded-full text-sm">
                 <i class="fas fa-user"></i> <span id="userName">Guest</span>
+                <span id="userRoleBadge" class="text-xs ml-1"></span>
             </div>
         </header>
 
@@ -159,30 +159,21 @@
                 </div>
             </div>
 
-            <!-- Deposits Section with M-Pesa STK Push -->
+            <!-- Deposits Section with Lipana.dev M-Pesa -->
             <div id="deposits" class="section">
                 <div class="card">
                     <h2 class="text-xl font-bold mb-4">💎 Deposit Funds</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="depositMethodsList">
-                        <!-- M-Pesa STK Push -->
-                        <div class="deposit-method border rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition" data-method="mpesa-stk">
+                        <div class="deposit-method border rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition" data-method="lipana">
                             <i class="fas fa-mobile-alt text-4xl text-green-600 mb-2"></i>
-                            <h3 class="font-bold">M-Pesa STK Push</h3>
-                            <p class="text-sm text-gray-600">Instant payment via M-Pesa</p>
+                            <h3 class="font-bold">M-Pesa (Lipana.dev)</h3>
+                            <p class="text-sm text-gray-600">Instant STK Push payment</p>
                         </div>
-                        <!-- Manual M-Pesa -->
-                        <div class="deposit-method border rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition" data-method="mpesa-manual">
-                            <i class="fas fa-mobile-alt text-4xl text-blue-600 mb-2"></i>
-                            <h3 class="font-bold">M-Pesa Manual</h3>
-                            <p class="text-sm text-gray-600">Pay via Till Number</p>
-                        </div>
-                        <!-- Crypto -->
                         <div class="deposit-method border rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition" data-method="crypto">
                             <i class="fab fa-bitcoin text-4xl text-orange-600 mb-2"></i>
                             <h3 class="font-bold">Cryptocurrency</h3>
                             <p class="text-sm text-gray-600">USDT, Bitcoin, Ethereum</p>
                         </div>
-                        <!-- Bank Transfer -->
                         <div class="deposit-method border rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition" data-method="bank">
                             <i class="fas fa-university text-4xl text-gray-600 mb-2"></i>
                             <h3 class="font-bold">Bank Transfer</h3>
@@ -194,24 +185,24 @@
                 </div>
             </div>
 
-            <!-- M-Pesa STK Push Modal -->
-            <div id="mpesaStkModal" class="modal">
+            <!-- Lipana.dev STK Push Modal -->
+            <div id="lipanaModal" class="modal">
                 <div class="modal-content">
-                    <h3 class="text-xl font-bold mb-4">💳 M-Pesa STK Push</h3>
+                    <h3 class="text-xl font-bold mb-4">💳 M-Pesa STK Push (Lipana.dev)</h3>
                     <div class="space-y-3">
-                        <input type="number" id="mpesaAmount" placeholder="Amount (KES)" class="w-full border rounded-lg p-2">
-                        <input type="tel" id="mpesaPhone" placeholder="Phone Number (e.g., 2547XXXXXXXX)" class="w-full border rounded-lg p-2">
-                        <div id="mpesaLoading" class="hidden text-center py-2">
+                        <input type="number" id="lipanaAmount" placeholder="Amount (KES)" class="w-full border rounded-lg p-2">
+                        <input type="tel" id="lipanaPhone" placeholder="Phone Number (e.g., 2547XXXXXXXX)" class="w-full border rounded-lg p-2">
+                        <div id="lipanaLoading" class="hidden text-center py-2">
                             <div class="loading-spinner"></div>
                             <p class="text-sm mt-2">Processing payment request...</p>
                         </div>
-                        <button id="initiateStkPushBtn" class="btn-success w-full">Send STK Push</button>
-                        <button id="closeMpesaModalBtn" class="btn-danger w-full mt-2">Cancel</button>
+                        <button id="initiateLipanaBtn" class="btn-success w-full">Send STK Push</button>
+                        <button id="closeLipanaModalBtn" class="btn-danger w-full mt-2">Cancel</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Other Sections (simplified) -->
+            <!-- Other Sections -->
             <div id="investments" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">📈 Investment Plans</h2><div id="investmentPlansList"></div><h3 class="text-lg font-bold mt-6">Your Active Investments</h3><div id="activeInvestmentsList"></div></div></div>
             <div id="withdrawals" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">🏦 Withdrawals</h2><button id="requestWithdrawBtn" class="btn-primary">Request Withdrawal</button><div id="withdrawalsList" class="mt-4"></div></div></div>
             <div id="balances" class="section"><div class="card"><h2 class="text-xl font-bold mb-4">💰 Balance Overview</h2><div id="balancesDetails"></div></div></div>
@@ -232,64 +223,159 @@
     <div id="ticketModal" class="modal"><div class="modal-content"><h3 class="text-xl font-bold">New Support Ticket</h3><input type="text" id="ticketSubject" placeholder="Subject" class="w-full border rounded p-2"><textarea id="ticketMessage" placeholder="Message" rows="3" class="w-full border rounded p-2 mt-2"></textarea><div class="flex gap-3 mt-4"><button id="submitTicketBtn" class="btn-success flex-1">Submit</button><button id="closeTicketModalBtn" class="btn-danger flex-1">Cancel</button></div></div></div>
     <div id="investModal" class="modal"><div class="modal-content"><h3 class="text-xl font-bold">Confirm Investment</h3><div id="investDetails"></div><div class="flex gap-3 mt-4"><button id="confirmInvestModalBtn" class="btn-success flex-1">Invest</button><button id="cancelInvestModalBtn" class="btn-danger flex-1">Cancel</button></div></div></div>
     <div id="infoModal" class="modal"><div class="modal-content"><h3 id="infoTitle" class="text-xl font-bold">Info</h3><p id="infoMessage"></p><button id="closeInfoBtn" class="btn-primary mt-4 w-full">OK</button></div></div>
-    <div id="reportDepositModal" class="modal"><div class="modal-content"><h3 class="text-xl font-bold">Report Pending Deposit</h3><input type="number" id="reportAmount" placeholder="Amount ($)" class="w-full border rounded p-2"><input type="text" id="reportTxId" placeholder="Transaction ID/Reference" class="w-full border rounded p-2 mt-2"><button id="submitReportBtn" class="btn-primary w-full mt-3">Submit Report</button><button id="closeReportModalBtn" class="btn-danger w-full mt-2">Cancel</button></div></div></div>
+    <div id="reportDepositModal" class="modal"><div class="modal-content"><h3 class="text-xl font-bold">Report Pending Deposit</h3><input type="number" id="reportAmount" placeholder="Amount ($)" class="w-full border rounded p-2"><input type="text" id="reportTxId" placeholder="Transaction ID/Reference" class="w-full border rounded p-2 mt-2"><button id="submitReportBtn" class="btn-primary w-full mt-3">Submit Report</button><button id="closeReportModalBtn" class="btn-danger w-full mt-2">Cancel</button></div></div>
 
     <script>
-        // Data storage
+        // API Base URL
+        const API_BASE = '/api';
         let currentUser = null;
         let isRealMode = false;
         let activeTrades = [];
         let autoTradeInterval = null;
         let currentPrice = 1.12345;
-
-        // Initialize data
-        function initData() {
-            if (!localStorage.getItem('users')) {
-                const defaultUsers = {
-                    'user@bestpay.com': { id: 'user1', email: 'user@bestpay.com', name: 'Trader', password: 'pass123', role: 'user', realBalance: 1000, demoBalance: 10000, totalEarned: 0, kycStatus: 'unverified', referralCode: 'USER123', bonusGiven: false },
-                    'admin@bestpay.com': { id: 'admin1', email: 'admin@bestpay.com', name: 'Administrator', password: 'admin123', role: 'admin', realBalance: 0, demoBalance: 10000, totalEarned: 0, kycStatus: 'verified', referralCode: 'ADMIN123', bonusGiven: false }
-                };
-                localStorage.setItem('users', JSON.stringify(defaultUsers));
-            }
-            if (!localStorage.getItem('trades')) localStorage.setItem('trades', JSON.stringify([]));
-            if (!localStorage.getItem('transactions')) localStorage.setItem('transactions', JSON.stringify([]));
-            if (!localStorage.getItem('investments')) localStorage.setItem('investments', JSON.stringify([]));
-            if (!localStorage.getItem('withdrawals')) localStorage.setItem('withdrawals', JSON.stringify([]));
-            if (!localStorage.getItem('deposits')) localStorage.setItem('deposits', JSON.stringify([]));
-            if (!localStorage.getItem('tickets')) localStorage.setItem('tickets', JSON.stringify([]));
-            if (!localStorage.getItem('announcements')) {
-                localStorage.setItem('announcements', JSON.stringify([
-                    { id: '1', title: 'Welcome to BestPay Pro!', content: 'Start trading with our advanced platform. M-Pesa STK Push is now available!', createdAt: new Date().toISOString() }
-                ]));
-            }
-            if (!localStorage.getItem('investment_plans')) {
-                localStorage.setItem('investment_plans', JSON.stringify([
-                    { id: '1', name: 'Starter', amount: 50, dailyROI: 5, durationDays: 30, imageUrl: '' },
-                    { id: '2', name: 'Pro', amount: 200, dailyROI: 8, durationDays: 30, imageUrl: '' },
-                    { id: '3', name: 'Elite', amount: 500, dailyROI: 12, durationDays: 45, imageUrl: '' }
-                ]));
-            }
-        }
+        let authToken = localStorage.getItem('authToken');
 
         // Helper functions
-        function showToast(msg, isError = false) { const toast = document.createElement('div'); toast.className = `toast ${isError ? 'bg-red-700' : 'bg-gray-800'}`; toast.innerText = msg; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
+        function showToast(msg, isError = false) { 
+            const toast = document.createElement('div'); 
+            toast.className = `toast ${isError ? 'bg-red-700' : 'bg-gray-800'}`; 
+            toast.innerText = msg; 
+            document.body.appendChild(toast); 
+            setTimeout(() => toast.remove(), 3000); 
+        }
         function showModal(id) { document.getElementById(id).classList.add('active'); }
         function hideModal(id) { document.getElementById(id).classList.remove('active'); }
         function showInfo(title, msg) { document.getElementById('infoTitle').innerText = title; document.getElementById('infoMessage').innerHTML = msg; showModal('infoModal'); }
 
-        // M-Pesa STK Push Function
-        async function initiateMpesaStkPush(amount, phone) {
-            const loadingEl = document.getElementById('mpesaLoading');
-            const initBtn = document.getElementById('initiateStkPushBtn');
+        // Authentication API calls
+        async function login(email, password) {
+            try {
+                const response = await fetch(`${API_BASE}/auth.js`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'login', email, password })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentUser = data.user;
+                    authToken = data.token;
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    showToast(`Welcome back, ${currentUser.name}!`);
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.querySelectorAll('.section').forEach(s => s.classList.add('active'));
+                    loadUserData();
+                    showSection('trading');
+                    return true;
+                } else {
+                    showInfo('Login Failed', data.error || 'Invalid credentials');
+                    return false;
+                }
+            } catch (error) {
+                showInfo('Error', 'Network error. Please try again.');
+                return false;
+            }
+        }
+
+        async function signup(email, password, name) {
+            try {
+                const response = await fetch(`${API_BASE}/auth.js`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'signup', email, password, name })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentUser = data.user;
+                    authToken = data.token;
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    showToast('Account created successfully!');
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.querySelectorAll('.section').forEach(s => s.classList.add('active'));
+                    loadUserData();
+                    showSection('trading');
+                    return true;
+                } else {
+                    showInfo('Signup Failed', data.error);
+                    return false;
+                }
+            } catch (error) {
+                showInfo('Error', 'Network error. Please try again.');
+                return false;
+            }
+        }
+
+        async function logout() {
+            if (autoTradeInterval) clearInterval(autoTradeInterval);
+            currentUser = null;
+            authToken = null;
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            showToast('Logged out successfully');
+        }
+
+        // Load user data from API
+        async function loadUserData() {
+            if (!currentUser) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth.js?action=getUser`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentUser = data.user;
+                    const bal = isRealMode ? (currentUser.realBalance || 0) : (currentUser.demoBalance || 10000);
+                    document.getElementById('balanceDisplay').innerText = `$${bal.toFixed(2)}`;
+                    document.getElementById('userName').innerText = currentUser.name.split(' ')[0];
+                    
+                    // Show admin badge and link
+                    const adminLink = document.getElementById('adminLink');
+                    const roleBadge = document.getElementById('userRoleBadge');
+                    if (currentUser.role === 'admin') {
+                        adminLink.style.display = 'flex';
+                        roleBadge.innerHTML = '<span class="admin-badge">ADMIN</span>';
+                    } else {
+                        adminLink.style.display = 'none';
+                        roleBadge.innerHTML = '';
+                    }
+                    
+                    updateBalancesPage();
+                    updateTransactionsPage();
+                    updateWithdrawalsPage();
+                    updateDepositsPage();
+                    updateReferralsPage();
+                    updateStreakPage();
+                    updateKYCPage();
+                    updateTicketsPage();
+                    updateAnnouncementsPage();
+                    updateInvestmentsPage();
+                    updateActiveInvestments();
+                    updateLeaderboard();
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Lipana.dev M-Pesa STK Push
+        async function initiateLipanaStkPush(amount, phone) {
+            const loadingEl = document.getElementById('lipanaLoading');
+            const initBtn = document.getElementById('initiateLipanaBtn');
             
             loadingEl.classList.remove('hidden');
             initBtn.disabled = true;
             
             try {
-                // Call your existing M-Pesa STK Push backend
-                const response = await fetch('/mpesa-stk.php', {
+                const response = await fetch(`${API_BASE}/lipana/stkpush.js`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
                     body: JSON.stringify({
                         amount: amount,
                         phone: phone,
@@ -301,23 +387,23 @@
                 
                 if (result.success) {
                     showToast('STK Push sent! Check your phone to complete payment.');
-                    // Store pending deposit
-                    const pendingDeposit = {
+                    const deposit = {
                         id: Date.now().toString(),
                         userId: currentUser.id,
-                        amount: amount / 130, // Convert to USD
-                        method: 'M-Pesa STK',
+                        amount: amount / 130,
+                        method: 'M-Pesa (Lipana)',
                         status: 'pending',
                         checkoutRequestId: result.CheckoutRequestID,
                         createdAt: new Date().toISOString()
                     };
-                    const deposits = JSON.parse(localStorage.getItem('deposits'));
-                    deposits.push(pendingDeposit);
+                    
+                    // Save deposit locally
+                    const deposits = JSON.parse(localStorage.getItem('deposits') || '[]');
+                    deposits.push(deposit);
                     localStorage.setItem('deposits', JSON.stringify(deposits));
                     
-                    // Start polling for payment confirmation
-                    pollPaymentStatus(result.CheckoutRequestID, amount / 130);
-                    hideModal('mpesaStkModal');
+                    pollLipanaPaymentStatus(result.CheckoutRequestID, amount / 130);
+                    hideModal('lipanaModal');
                 } else {
                     showToast(result.error || 'STK Push failed. Try again.', true);
                 }
@@ -330,90 +416,546 @@
             }
         }
 
-        // Poll payment status
-        async function pollPaymentStatus(checkoutRequestId, amountUSD) {
+        async function pollLipanaPaymentStatus(checkoutRequestId, amountUSD) {
             const interval = setInterval(async () => {
                 try {
-                    const response = await fetch(`/api/mpesa/stkquery.js?checkoutRequestId=${checkoutRequestId}`);
+                    const response = await fetch(`${API_BASE}/lipana/stkquery.js?checkoutRequestId=${checkoutRequestId}`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    });
                     const result = await response.json();
                     
                     if (result.ResultCode === 0) {
-                        // Payment successful
                         clearInterval(interval);
                         
-                        // Update user balance
-                        const users = JSON.parse(localStorage.getItem('users'));
-                        if (isRealMode) currentUser.realBalance += amountUSD;
-                        else currentUser.demoBalance += amountUSD;
-                        users[currentUser.email] = currentUser;
-                        localStorage.setItem('users', JSON.stringify(users));
-                        
-                        // Update deposit status
-                        const deposits = JSON.parse(localStorage.getItem('deposits'));
-                        const deposit = deposits.find(d => d.checkoutRequestId === checkoutRequestId);
-                        if (deposit) {
-                            deposit.status = 'completed';
-                            localStorage.setItem('deposits', JSON.stringify(deposits));
-                        }
-                        
-                        // Add transaction
-                        const transactions = JSON.parse(localStorage.getItem('transactions'));
-                        transactions.push({
-                            id: Date.now().toString(),
-                            userId: currentUser.id,
-                            type: 'deposit',
-                            amount: amountUSD,
-                            description: `M-Pesa deposit of $${amountUSD.toFixed(2)}`,
-                            timestamp: new Date().toISOString(),
-                            status: 'completed'
+                        // Update balance via API
+                        const updateRes = await fetch(`${API_BASE}/auth.js?action=updateBalance`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${authToken}`
+                            },
+                            body: JSON.stringify({ amount: amountUSD, type: 'deposit' })
                         });
-                        localStorage.setItem('transactions', JSON.stringify(transactions));
                         
-                        showToast(`$${amountUSD.toFixed(2)} deposited successfully!`);
-                        loadUserData();
-                        updateDepositsPage();
-                        updateTransactionsPage();
-                    } else if (result.ResultCode !== 1037) { // 1037 = pending
+                        if (updateRes.ok) {
+                            showToast(`$${amountUSD.toFixed(2)} deposited successfully!`);
+                            loadUserData();
+                            updateDepositsPage();
+                            updateTransactionsPage();
+                        }
+                    } else if (result.ResultCode !== 1037) {
                         clearInterval(interval);
                         showToast('Payment failed or expired. Please contact support.', true);
                     }
                 } catch (error) {
                     console.error('Polling error:', error);
                 }
-            }, 5000); // Check every 5 seconds
+            }, 5000);
             
-            // Stop polling after 2 minutes
             setTimeout(() => clearInterval(interval), 120000);
         }
 
-        // Authentication
-        function login(email, password) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users[email];
-            if (user && user.password === password) {
-                currentUser = user;
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                showToast(`Welcome back, ${user.name}!`);
-                document.getElementById('loginScreen').style.display = 'none';
-                document.querySelectorAll('.section').forEach(s => s.classList.add('active'));
-                loadUserData();
-                showSection('trading');
-                return true;
-            }
-            showInfo('Login Failed', 'Invalid email or password');
-            return false;
+        // Trading functions
+        function updatePotential() {
+            let stake = parseFloat(document.getElementById('stakeAmount').value) || 0;
+            let multiplier = parseFloat(document.getElementById('multiplierSlider').value);
+            document.getElementById('multiplierValue').innerText = multiplier.toFixed(1) + 'x';
+            document.getElementById('potentialProfit').innerText = `$${(stake * multiplier - stake).toFixed(2)}`;
+            document.getElementById('potentialLoss').innerText = `$${stake.toFixed(2)}`;
         }
 
-        function signup(email, password, name) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            if (users[email]) { showInfo('Error', 'Email already exists'); return false; }
-            const newUser = { id: Date.now().toString(), email, name, password, role: 'user', realBalance: 0, demoBalance: 10000, totalEarned: 0, kycStatus: 'unverified', referralCode: email.slice(0, 8).toUpperCase(), bonusGiven: false };
-            users[email] = newUser;
+        async function placeTrade(direction) {
+            let stake = parseFloat(document.getElementById('stakeAmount').value);
+            let multiplier = parseFloat(document.getElementById('multiplierSlider').value);
+            let balance = isRealMode ? (currentUser.realBalance || 0) : (currentUser.demoBalance || 10000);
+            
+            if (stake < 1) { showToast('Minimum stake $1', true); return false; }
+            if (stake > balance) { showToast('Insufficient balance', true); return false; }
+            
+            const entryPrice = currentPrice;
+            const tradeId = Date.now().toString();
+            
+            // Deduct stake via API
+            const updateRes = await fetch(`${API_BASE}/auth.js?action=updateBalance`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ amount: -stake, type: 'trade_stake', isReal: isRealMode })
+            });
+            
+            if (!updateRes.ok) {
+                showToast('Failed to place trade', true);
+                return false;
+            }
+            
+            const trades = JSON.parse(localStorage.getItem('trades') || '[]');
+            trades.push({ id: tradeId, userId: currentUser.id, direction, stake, multiplier, entryPrice, status: 'active', isReal: isRealMode, createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 60000).toISOString() });
+            localStorage.setItem('trades', JSON.stringify(trades));
+            
+            loadUserData();
+            setTimeout(() => settleTrade(tradeId), 60000);
+            updateActiveTrades();
+            showToast(`${direction.toUpperCase()} trade placed! $${stake} at ${multiplier}x`);
+            return true;
+        }
+
+        function settleTrade(tradeId) {
+            const trades = JSON.parse(localStorage.getItem('trades') || '[]');
+            const tradeIndex = trades.findIndex(t => t.id === tradeId);
+            if (tradeIndex === -1 || trades[tradeIndex].status !== 'active') return;
+            
+            const trade = trades[tradeIndex];
+            const won = (trade.direction === 'call' && currentPrice > trade.entryPrice) || (trade.direction === 'put' && currentPrice < trade.entryPrice);
+            const payout = won ? trade.stake * trade.multiplier : 0;
+            const profit = won ? payout - trade.stake : -trade.stake;
+            
+            trades[tradeIndex].status = 'closed';
+            trades[tradeIndex].result = won ? 'win' : 'loss';
+            trades[tradeIndex].exitPrice = currentPrice;
+            trades[tradeIndex].profit = profit;
+            localStorage.setItem('trades', JSON.stringify(trades));
+            
+            if (won) {
+                fetch(`${API_BASE}/auth.js?action=updateBalance`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ amount: payout, type: 'trade_win', isReal: trade.isReal })
+                });
+            }
+            
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            transactions.push({ id: Date.now().toString(), userId: currentUser.id, type: won ? 'trade_win' : 'trade_loss', amount: won ? profit : -trade.stake, description: `${trade.direction.toUpperCase()} ${trade.multiplier}x`, timestamp: new Date().toISOString(), status: 'completed' });
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            
+            loadUserData();
+            updateActiveTrades();
+            updateTransactionsPage();
+            showToast(won ? `🎉 WIN! +$${profit.toFixed(2)}` : `💔 LOSS! -$${trade.stake.toFixed(2)}`);
+        }
+
+        function updateActiveTrades() {
+            const trades = JSON.parse(localStorage.getItem('trades') || '[]');
+            const active = trades.filter(t => t.userId === currentUser?.id && t.status === 'active' && t.isReal === isRealMode);
+            const container = document.getElementById('activeTradesList');
+            
+            if (active.length === 0) { container.innerHTML = '<div class="text-center text-gray-500 py-4">No active trades</div>'; return; }
+            
+            container.innerHTML = active.map(t => {
+                const expiry = new Date(t.expiresAt);
+                const remaining = Math.max(0, Math.floor((expiry - new Date()) / 1000));
+                const currentProfit = t.direction === 'call' ? (currentPrice > t.entryPrice ? t.stake * (t.multiplier - 1) : -t.stake) : (currentPrice < t.entryPrice ? t.stake * (t.multiplier - 1) : -t.stake);
+                return `<div class="trade-card ${currentProfit > 0 ? 'win' : currentProfit < 0 ? 'loss' : ''}">
+                    <div class="flex justify-between">
+                        <span class="font-bold">${t.direction.toUpperCase()} $${t.stake} (${t.multiplier}x)</span>
+                        <span class="font-mono">${remaining}s</span>
+                    </div>
+                    <div class="text-sm">Entry: ${t.entryPrice.toFixed(5)}</div>
+                    <div class="font-bold ${currentProfit >= 0 ? 'text-green-600' : 'text-red-600'}">${currentProfit >= 0 ? `▲ +$${currentProfit.toFixed(2)}` : `▼ -$${Math.abs(currentProfit).toFixed(2)}`}</div>
+                </div>`;
+            }).join('');
+        }
+
+        // Update functions (simplified - using localStorage for demo)
+        function updateBalancesPage() {
+            document.getElementById('balancesDetails').innerHTML = `
+                <div class="space-y-2">
+                    <div class="flex justify-between"><span>💰 Real Balance:</span><span class="font-bold">$${(currentUser.realBalance || 0).toFixed(2)}</span></div>
+                    <div class="flex justify-between"><span>🎮 Demo Balance:</span><span class="font-bold">$${(currentUser.demoBalance || 10000).toFixed(2)}</span></div>
+                    <div class="flex justify-between"><span>🏆 Total Earned:</span><span class="font-bold text-green-600">$${(currentUser.totalEarned || 0).toFixed(2)}</span></div>
+                    <div class="flex justify-between"><span>📊 USD/KES:</span><span class="font-bold">130.00</span></div>
+                </div>
+            `;
+        }
+
+        function updateTransactionsPage() {
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const userTxs = transactions.filter(t => t.userId === currentUser.id).slice(-20).reverse();
+            document.getElementById('transactionsList').innerHTML = userTxs.length ? userTxs.map(t => `
+                <div class="border-b py-2">
+                    <div class="flex justify-between">
+                        <span>${t.type.replace('_', ' ').toUpperCase()}</span>
+                        <span class="font-bold ${t.amount >= 0 ? 'text-green-600' : 'text-red-600'}">${t.amount >= 0 ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}</span>
+                    </div>
+                    <div class="text-sm text-gray-500">${new Date(t.timestamp).toLocaleString()}</div>
+                </div>
+            `).join('') : '<div class="text-center text-gray-500 py-4">No transactions yet</div>';
+        }
+
+        function updateWithdrawalsPage() {
+            const withdrawals = JSON.parse(localStorage.getItem('withdrawals') || '[]');
+            const userWds = withdrawals.filter(w => w.userId === currentUser.id);
+            document.getElementById('withdrawalsList').innerHTML = userWds.length ? userWds.map(w => `
+                <div class="border-b py-2">
+                    <div class="flex justify-between">
+                        <span>$${w.amount}</span>
+                        <span class="${w.status === 'pending' ? 'text-yellow-600' : w.status === 'completed' ? 'text-green-600' : 'text-red-600'}">${w.status}</span>
+                    </div>
+                    <div class="text-sm">${w.method} | ${new Date(w.createdAt).toLocaleString()}</div>
+                </div>
+            `).join('') : '<div class="text-center text-gray-500 py-4">No withdrawal requests</div>';
+        }
+
+        function updateDepositsPage() {
+            const deposits = JSON.parse(localStorage.getItem('deposits') || '[]');
+            const userDeposits = deposits.filter(d => d.userId === currentUser.id);
+            document.getElementById('depositsList').innerHTML = userDeposits.length ? userDeposits.map(d => `
+                <div class="border-b py-2">
+                    <div class="flex justify-between">
+                        <span>$${d.amount.toFixed(2)}</span>
+                        <span class="${d.status === 'pending' ? 'text-yellow-600' : 'text-green-600'}">${d.status}</span>
+                    </div>
+                    <div class="text-sm">${d.method} | ${new Date(d.createdAt).toLocaleString()}</div>
+                </div>
+            `).join('') : '<div class="text-center text-gray-500 py-4">No deposits yet</div>';
+        }
+
+        function updateReferralsPage() {
+            document.getElementById('referralLink').innerHTML = `<code class="bg-gray-100 p-2 rounded block text-center">${window.location.origin}/?ref=${currentUser.referralCode || currentUser.id}</code>`;
+        }
+
+        function updateStreakPage() {
+            const streakGrid = document.getElementById('streakGrid');
+            streakGrid.innerHTML = '';
+            for (let i = 0; i < 7; i++) {
+                streakGrid.innerHTML += `<div class="text-center p-3 bg-gray-100 rounded ${i === 0 ? 'bg-green-100' : ''}">
+                    <div class="font-bold">Day ${i + 1}</div>
+                    <div>$${i === 0 ? '0.05' : '0.10'}</div>
+                    <i class="fas ${i === 0 ? 'fa-check-circle text-green-600' : 'fa-lock text-gray-400'}"></i>
+                </div>`;
+            }
+        }
+
+        function updateKYCPage() {
+            document.getElementById('kycStatus').innerHTML = `<span class="px-2 py-1 rounded ${currentUser.kycStatus === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${currentUser.kycStatus || 'unverified'}</span>`;
+        }
+
+        function updateTicketsPage() {
+            const tickets = JSON.parse(localStorage.getItem('tickets') || '[]');
+            const userTickets = tickets.filter(t => t.userId === currentUser.id);
+            document.getElementById('ticketsList').innerHTML = userTickets.length ? userTickets.map(t => `
+                <div class="border rounded p-3">
+                    <div class="flex justify-between">
+                        <span class="font-bold">${t.subject}</span>
+                        <span class="text-xs ${t.status === 'open' ? 'text-green-600' : 'text-gray-500'}">${t.status}</span>
+                    </div>
+                    <div class="text-sm mt-1">${t.message}</div>
+                    <div class="text-xs text-gray-500 mt-1">${new Date(t.createdAt).toLocaleString()}</div>
+                </div>
+            `).join('') : '<div class="text-center text-gray-500 py-4">No tickets yet</div>';
+        }
+
+        function updateAnnouncementsPage() {
+            const announcements = JSON.parse(localStorage.getItem('announcements') || '[]');
+            document.getElementById('announcementsList').innerHTML = announcements.length ? announcements.map(a => `
+                <div class="border-b py-3">
+                    <div class="font-bold">${a.title}</div>
+                    <div class="text-sm">${a.content}</div>
+                    <div class="text-xs text-gray-500 mt-1">${new Date(a.createdAt).toLocaleString()}</div>
+                </div>
+            `).join('') : '<div class="text-center text-gray-500 py-4">No announcements</div>';
+        }
+
+        function updateInvestmentsPage() {
+            const plans = JSON.parse(localStorage.getItem('investment_plans') || '[]');
+            document.getElementById('investmentPlansList').innerHTML = plans.map(p => `
+                <div class="border rounded-lg p-4 mb-3">
+                    <h3 class="font-bold text-lg">${p.name}</h3>
+                    <div>Amount: $${p.amount}</div>
+                    <div>Daily ROI: ${p.dailyROI}%</div>
+                    <div>Duration: ${p.durationDays} days</div>
+                    <button onclick="openInvestModal('${p.id}', ${p.amount}, ${p.dailyROI}, ${p.durationDays})" class="btn-primary w-full mt-2">Invest</button>
+                </div>
+            `).join('');
+        }
+
+        function updateActiveInvestments() {
+            const investments = JSON.parse(localStorage.getItem('investments') || '[]');
+            const active = investments.filter(i => i.userId === currentUser.id && i.status === 'active');
+            document.getElementById('activeInvestmentsList').innerHTML = active.length ? active.map(i => `
+                <div class="border rounded p-3">
+                    <div class="flex justify-between">
+                        <span class="font-bold">$${i.amount}</span>
+                        <span class="text-green-600">${i.dailyROI}% daily</span>
+                    </div>
+                    <div class="text-sm">Started: ${new Date(i.startDate).toLocaleDateString()}</div>
+                    <button onclick="claimProfit('${i.id}', ${i.amount}, ${i.dailyROI})" class="btn-success text-sm px-3 py-1 mt-2">Claim Daily Profit</button>
+                </div>
+            `).join('') : '<div class="text-center text-gray-500 py-4">No active investments</div>';
+        }
+
+        function updateLeaderboard() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userList = Object.values(users);
+            const sorted = userList.sort((a, b) => (b.totalEarned || 0) - (a.totalEarned || 0)).slice(0, 10);
+            document.getElementById('leaderboardList').innerHTML = sorted.map((u, i) => `
+                <div class="flex justify-between border-b py-2">
+                    <span>${i + 1}. ${u.name}</span>
+                    <span class="font-bold">$${(u.totalEarned || 0).toFixed(2)}</span>
+                </div>
+            `).join('');
+        }
+
+        // Investment functions
+        window.openInvestModal = (planId, amount, roi, duration) => {
+            document.getElementById('investDetails').innerHTML = `<p>Invest $${amount} in this plan?</p><p>Daily profit: $${(amount * roi / 100).toFixed(2)}</p><p>Duration: ${duration} days</p>`;
+            window.pendingInvest = { planId, amount, roi, duration };
+            showModal('investModal');
+        };
+
+        window.claimProfit = (investmentId, amount, roi) => {
+            const profit = amount * roi / 100;
+            if (isRealMode) currentUser.realBalance += profit;
+            else currentUser.demoBalance += profit;
+            
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            users[currentUser.email] = currentUser;
             localStorage.setItem('users', JSON.stringify(users));
-            currentUser = newUser;
-            localStorage.setItem('currentUser', JSON.stringify(newUser));
-            showToast('Account created successfully!');
+            
+            const investments = JSON.parse(localStorage.getItem('investments') || '[]');
+            const invIndex = investments.findIndex(i => i.id === investmentId);
+            if (invIndex !== -1) {
+                investments[invIndex].lastProfitClaim = new Date().toISOString();
+                localStorage.setItem('investments', JSON.stringify(investments));
+            }
+            
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            transactions.push({ id: Date.now().toString(), userId: currentUser.id, type: 'investment_profit', amount: profit, description: `Daily profit from investment`, timestamp: new Date().toISOString(), status: 'completed' });
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            
+            loadUserData();
+            updateActiveInvestments();
+            showToast(`$${profit.toFixed(2)} profit claimed!`);
+        };
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar a[data-section="${sectionId}"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        // Event Listeners
+        document.getElementById('loginBtn').onclick = () => login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
+        document.getElementById('signupBtn').onclick = () => signup(document.getElementById('signupEmail').value, document.getElementById('signupPassword').value, document.getElementById('signupName').value);
+        document.getElementById('logoutBtn').onclick = logout;
+        document.getElementById('hamburgerBtn').onclick = () => { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('active'); };
+        document.getElementById('closeSidebarBtn').onclick = () => { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); };
+        document.getElementById('overlay').onclick = () => { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); };
+        
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.onclick = (e) => { e.preventDefault(); showSection(link.dataset.section); document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); };
+        });
+
+        document.getElementById('demoModeBtn').onclick = () => { isRealMode = false; document.getElementById('demoModeBtn').classList.add('bg-indigo-600', 'text-white'); document.getElementById('realModeBtn').classList.remove('bg-indigo-600', 'text-white'); document.getElementById('realModeBtn').classList.add('bg-gray-200'); loadUserData(); updateActiveTrades(); showToast('Demo mode active'); };
+        document.getElementById('realModeBtn').onclick = () => { isRealMode = true; document.getElementById('realModeBtn').classList.add('bg-indigo-600', 'text-white'); document.getElementById('demoModeBtn').classList.remove('bg-indigo-600', 'text-white'); document.getElementById('demoModeBtn').classList.add('bg-gray-200'); loadUserData(); updateActiveTrades(); showToast('Real mode active'); };
+
+        document.getElementById('callBtn').onclick = () => placeTrade('call');
+        document.getElementById('putBtn').onclick = () => placeTrade('put');
+        document.getElementById('stakeAmount').oninput = updatePotential;
+        document.getElementById('multiplierSlider').oninput = updatePotential;
+        document.querySelectorAll('.stake-preset').forEach(btn => btn.onclick = () => { document.getElementById('stakeAmount').value = btn.dataset.stake; updatePotential(); });
+
+        // Deposit methods
+        document.querySelectorAll('.deposit-method').forEach(method => {
+            method.onclick = () => {
+                const methodType = method.dataset.method;
+                if (methodType === 'lipana') {
+                    showModal('lipanaModal');
+                } else if (methodType === 'crypto') {
+                    showInfo('Crypto Deposit', 'Send USDT (TRC20) to: TXxxxxxxxxxxxxxxxxxxxxxxxxxxx\nSend Bitcoin to: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa\nContact support after sending.');
+                } else if (methodType === 'bank') {
+                    showInfo('Bank Transfer', 'Account Name: BestPay Pro\nAccount Number: 1234567890\nBank: KCB Bank\nBranch: Nairobi');
+                }
+            };
+        });
+
+        document.getElementById('initiateLipanaBtn').onclick = () => {
+            const amount = parseFloat(document.getElementById('lipanaAmount').value);
+            const phone = document.getElementById('lipanaPhone').value;
+            if (!amount || amount < 10) { showToast('Minimum amount is KES 10', true); return; }
+            if (!phone || phone.length < 10) { showToast('Enter valid phone number', true); return; }
+            initiateLipanaStkPush(amount, phone);
+        };
+        document.getElementById('closeLipanaModalBtn').onclick = () => hideModal('lipanaModal');
+        document.getElementById('closeInfoBtn').onclick = () => hideModal('infoModal');
+        document.getElementById('topUpBtn').onclick = () => showSection('deposits');
+        document.getElementById('requestWithdrawBtn').onclick = () => showModal('withdrawModal');
+        document.getElementById('submitWithdrawBtn').onclick = () => {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const method = document.getElementById('withdrawMethod').value;
+            const details = document.getElementById('withdrawDetails').value;
+            const balance = isRealMode ? currentUser.realBalance : currentUser.demoBalance;
+            if (!isRealMode) { showToast('Switch to Real mode to withdraw', true); return; }
+            if (amount < 10) { showToast('Minimum withdrawal $10', true); return; }
+            if (amount > balance) { showToast('Insufficient balance', true); return; }
+            const withdrawals = JSON.parse(localStorage.getItem('withdrawals') || '[]');
+            withdrawals.push({ id: Date.now().toString(), userId: currentUser.id, amount, method, details, status: 'pending', createdAt: new Date().toISOString() });
+            localStorage.setItem('withdrawals', JSON.stringify(withdrawals));
+            showToast('Withdrawal request submitted! Pending approval.');
+            hideModal('withdrawModal');
+            updateWithdrawalsPage();
+        };
+        document.getElementById('closeWithdrawModalBtn').onclick = () => hideModal('withdrawModal');
+        document.getElementById('newTicketBtn').onclick = () => showModal('ticketModal');
+        document.getElementById('submitTicketBtn').onclick = () => {
+            const subject = document.getElementById('ticketSubject').value;
+            const message = document.getElementById('ticketMessage').value;
+            if (!subject || !message) { showToast('All fields required', true); return; }
+            const tickets = JSON.parse(localStorage.getItem('tickets') || '[]');
+            tickets.push({ id: Date.now().toString(), userId: currentUser.id, subject, message, status: 'open', createdAt: new Date().toISOString() });
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+            showToast('Ticket created!');
+            hideModal('ticketModal');
+            updateTicketsPage();
+        };
+        document.getElementById('closeTicketModalBtn').onclick = () => hideModal('ticketModal');
+        document.getElementById('copyLinkBtn').onclick = () => { navigator.clipboard.writeText(document.getElementById('referralLink').innerText); showToast('Link copied!'); };
+        document.getElementById('reportDepositBtn').onclick = () => showModal('reportDepositModal');
+        document.getElementById('submitReportBtn').onclick = () => {
+            const amount = parseFloat(document.getElementById('reportAmount').value);
+            const txId = document.getElementById('reportTxId').value;
+            if (!amount || !txId) { showToast('All fields required', true); return; }
+            const tickets = JSON.parse(localStorage.getItem('tickets') || '[]');
+            tickets.push({ id: Date.now().toString(), userId: currentUser.id, subject: 'Pending Deposit Report', message: `Amount: $${amount}\nTransaction ID: ${txId}`, status: 'open', createdAt: new Date().toISOString() });
+            localStorage.setItem('tickets', JSON.stringify(tickets));
+            showToast('Deposit reported! Support will review.');
+            hideModal('reportDepositModal');
+        };
+        document.getElementById('closeReportModalBtn').onclick = () => hideModal('reportDepositModal');
+        document.getElementById('submitKycBtn').onclick = () => {
+            const faceUrl = document.getElementById('faceUrl').value;
+            const idUrl = document.getElementById('idUrl').value;
+            if (!faceUrl || !idUrl) { showToast('Both URLs required', true); return; }
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            currentUser.kycStatus = 'pending';
+            users[currentUser.email] = currentUser;
+            localStorage.setItem('users', JSON.stringify(users));
+            showToast('KYC submitted! Pending review.');
+            updateKYCPage();
+        };
+        document.getElementById('updateNameBtn').onclick = () => {
+            const newName = document.getElementById('displayName').value;
+            if (!newName) return;
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            currentUser.name = newName;
+            users[currentUser.email] = currentUser;
+            localStorage.setItem('users', JSON.stringify(users));
+            showToast('Name updated!');
+            loadUserData();
+        };
+
+        document.getElementById('confirmInvestModalBtn').onclick = () => {
+            if (!window.pendingInvest) return;
+            const { planId, amount, roi, duration } = window.pendingInvest;
+            const balance = isRealMode ? currentUser.realBalance : currentUser.demoBalance;
+            if (amount > balance) { showToast('Insufficient balance', true); return; }
+            
+            if (isRealMode) currentUser.realBalance -= amount;
+            else currentUser.demoBalance -= amount;
+            
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            users[currentUser.email] = currentUser;
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            const investments = JSON.parse(localStorage.getItem('investments') || '[]');
+            investments.push({ id: Date.now().toString(), userId: currentUser.id, planId, amount, dailyROI: roi, durationDays: duration, startDate: new Date().toISOString(), lastProfitClaim: new Date().toISOString(), status: 'active' });
+            localStorage.setItem('investments', JSON.stringify(investments));
+            
+            loadUserData();
+            updateActiveInvestments();
+            hideModal('investModal');
+            showToast(`Invested $${amount} successfully!`);
+        };
+        document.getElementById('cancelInvestModalBtn').onclick = () => hideModal('investModal');
+
+        // Auto trade
+        let autoActive = false;
+        document.getElementById('autoTradeBtn').onclick = () => {
+            if (autoActive) return;
+            autoActive = true;
+            document.getElementById('autoTradeBtn').classList.add('hidden');
+            document.getElementById('stopAutoBtn').classList.remove('hidden');
+            autoTradeInterval = setInterval(() => {
+                const stake = parseFloat(document.getElementById('stakeAmount').value);
+                const multiplier = parseFloat(document.getElementById('multiplierSlider').value);
+                const balance = isRealMode ? currentUser.realBalance : currentUser.demoBalance;
+                if (stake > balance) { stopAutoTrade(); showToast('Auto-trade stopped: insufficient balance', true); return; }
+                placeTrade('call');
+            }, 61000);
+            showToast('Auto-trade started (CALL every 61s)');
+        };
+        function stopAutoTrade() {
+            if (autoTradeInterval) clearInterval(autoTradeInterval);
+            autoActive = false;
+            document.getElementById('autoTradeBtn').classList.remove('hidden');
+            document.getElementById('stopAutoBtn').classList.add('hidden');
+            showToast('Auto-trade stopped');
+        }
+        document.getElementById('stopAutoBtn').onclick = stopAutoTrade;
+
+        // Price simulation
+        setInterval(updateActiveTrades, 1000);
+        setInterval(() => {
+            let change = (Math.random() - 0.5) * 0.0005;
+            let newPrice = currentPrice + change;
+            newPrice = Math.min(1.25, Math.max(1.05, newPrice));
+            currentPrice = newPrice;
+            document.getElementById('livePrice').innerText = currentPrice.toFixed(5);
+        }, 2000);
+
+        // Initialize data
+        function initData() {
+            const users = localStorage.getItem('users');
+            if (!users) {
+                const defaultUsers = {
+                    'hankwane1@gmail.com': { id: 'admin1', email: 'hankwane1@gmail.com', name: 'Admin', password: 'admin123', role: 'admin', realBalance: 10000, demoBalance: 10000, totalEarned: 0, kycStatus: 'verified', referralCode: 'ADMIN123', bonusGiven: false },
+                    'user@bestpay.com': { id: 'user1', email: 'user@bestpay.com', name: 'Trader', password: 'pass123', role: 'user', realBalance: 1000, demoBalance: 10000, totalEarned: 0, kycStatus: 'unverified', referralCode: 'USER123', bonusGiven: false }
+                };
+                localStorage.setItem('users', JSON.stringify(defaultUsers));
+            }
+            if (!localStorage.getItem('trades')) localStorage.setItem('trades', JSON.stringify([]));
+            if (!localStorage.getItem('transactions')) localStorage.setItem('transactions', JSON.stringify([]));
+            if (!localStorage.getItem('investments')) localStorage.setItem('investments', JSON.stringify([]));
+            if (!localStorage.getItem('withdrawals')) localStorage.setItem('withdrawals', JSON.stringify([]));
+            if (!localStorage.getItem('deposits')) localStorage.setItem('deposits', JSON.stringify([]));
+            if (!localStorage.getItem('tickets')) localStorage.setItem('tickets', JSON.stringify([]));
+            if (!localStorage.getItem('announcements')) {
+                localStorage.setItem('announcements', JSON.stringify([
+                    { id: '1', title: 'Welcome to BestPay Pro!', content: 'Start trading with our advanced platform. M-Pesa STK Push via Lipana.dev is now available!', createdAt: new Date().toISOString() }
+                ]));
+            }
+            if (!localStorage.getItem('investment_plans')) {
+                localStorage.setItem('investment_plans', JSON.stringify([
+                    { id: '1', name: 'Starter', amount: 50, dailyROI: 5, durationDays: 30, imageUrl: '' },
+                    { id: '2', name: 'Pro', amount: 200, dailyROI: 8, durationDays: 30, imageUrl: '' },
+                    { id: '3', name: 'Elite', amount: 500, dailyROI: 12, durationDays: 45, imageUrl: '' }
+                ]));
+            }
+        }
+
+        // Check for existing session
+        const savedToken = localStorage.getItem('authToken');
+        const savedUserData = localStorage.getItem('currentUser');
+        if (savedToken && savedUserData) {
+            currentUser = JSON.parse(savedUserData);
+            authToken = savedToken;
             document.getElementById('loginScreen').style.display = 'none';
             document.querySelectorAll('.section').forEach(s => s.classList.add('active'));
             loadUserData();
-            showSection('trading
+            showSection('trading');
+        } else {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        }
+
+        initData();
+        updatePotential();
+    </script>
+</body>
+</html>
