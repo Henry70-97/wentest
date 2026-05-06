@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BestPay Pro | Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { background: #f1f5f9; }
+        .card { background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold"><i class="fas fa-shield-alt text-indigo-600"></i> Admin Dashboard</h1>
+            <a href="/" class="btn-primary px-4 py-2 bg-gray-600 text-white rounded-lg"><i class="fas fa-arrow-left"></i> Back to Site</a>
+        </div>
+        
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card card">
+                <div class="text-2xl font-bold" id="totalUsers">0</div>
+                <div>Total Users</div>
+            </div>
+            <div class="stat-card card">
+                <div class="text-2xl font-bold" id="totalVolume">$0</div>
+                <div>Total Trading Volume</div>
+            </div>
+            <div class="stat-card card">
+                <div class="text-2xl font-bold" id="pendingWithdrawals">0</div>
+                <div>Pending Withdrawals</div>
+            </div>
+            <div class="stat-card card">
+                <div class="text-2xl font-bold" id="pendingDeposits">0</div>
+                <div>Pending Deposits</div>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="border-b mb-4">
+            <button class="tab-btn active px-4 py-2 font-bold text-indigo-600 border-b-2 border-indigo-600" data-tab="users">Users</button>
+            <button class="tab-btn px-4 py-2 font-bold text-gray-600" data-tab="withdrawals">Withdrawals</button>
+            <button class="tab-btn px-4 py-2 font-bold text-gray-600" data-tab="deposits">Deposits</button>
+            <button class="tab-btn px-4 py-2 font-bold text-gray-600" data-tab="investments">Investments</button>
+            <button class="tab-btn px-4 py-2 font-bold text-gray-600" data-tab="announcements">Announcements</button>
+            <button class="tab-btn px-4 py-2 font-bold text-gray-600" data-tab="tickets">Tickets</button>
+        </div>
+        
+        <!-- Users Tab -->
+        <div id="usersTab" class="tab-content active">
+            <div class="card">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="text-left p-2">Name</th>
+                                <th class="text-left p-2">Email</th>
+                                <th class="text-left p-2">Role</th>
+                                <th class="text-left p-2">Real Balance</th>
+                                <th class="text-left p-2">KYC</th>
+                                <th class="text-left p-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Withdrawals Tab -->
+        <div id="withdrawalsTab" class="tab-content hidden">
+            <div class="card">
+                <div id="withdrawalsList" class="space-y-3"></div>
+            </div>
+        </div>
+        
+        <!-- Deposits Tab -->
+        <div id="depositsTab" class="tab-content hidden">
+            <div class="card">
+                <div id="depositsList" class="space-y-3"></div>
+            </div>
+        </div>
+        
+        <!-- Investments Tab -->
+        <div id="investmentsTab" class="tab-content hidden">
+            <div class="card">
+                <h3 class="font-bold mb-3">Manage Investment Plans</h3>
+                <div id="investmentPlansList" class="space-y-3 mb-6"></div>
+                <button id="addPlanBtn" class="btn-primary bg-green-600 text-white px-4 py-2 rounded">+ Add New Plan</button>
+            </div>
+        </div>
+        
+        <!-- Announcements Tab -->
+        <div id="announcementsTab" class="tab-content hidden">
+            <div class="card">
+                <textarea id="newAnnouncement" rows="3" class="w-full border rounded p-2 mb-2" placeholder="New announcement..."></textarea>
+                <button id="postAnnouncementBtn" class="btn-primary bg-indigo-600 text-white px-4 py-2 rounded">Post Announcement</button>
+                <div id="announcementsList" class="mt-4 space-y-3"></div>
+            </div>
+        </div>
+        
+        <!-- Tickets Tab -->
+        <div id="ticketsTab" class="tab-content hidden">
+            <div class="card">
+                <div id="ticketsList" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="addPlanModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-xl font-bold mb-4">Add Investment Plan</h3>
+            <input type="text" id="planName" placeholder="Plan Name" class="w-full border rounded p-2 mb-2">
+            <input type="number" id="planAmount" placeholder="Amount ($)" class="w-full border rounded p-2 mb-2">
+            <input type="number" id="planROI" placeholder="Daily ROI (%)" class="w-full border rounded p-2 mb-2">
+            <input type="number" id="planDuration" placeholder="Duration (days)" class="w-full border rounded p-2 mb-2">
+            <div class="flex gap-2 mt-4">
+                <button id="savePlanBtn" class="bg-green-600 text-white px-4 py-2 rounded flex-1">Save</button>
+                <button id="closePlanModalBtn" class="bg-gray-500 text-white px-4 py-2 rounded flex-1">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="replyTicketModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-xl font-bold mb-4">Reply to Ticket</h3>
+            <p id="ticketInfo" class="text-sm text-gray-600 mb-2"></p>
+            <textarea id="replyMessage" rows="3" class="w-full border rounded p-2 mb-2" placeholder="Your reply..."></textarea>
+            <div class="flex gap-2 mt-4">
+                <button id="sendReplyBtn" class="bg-green-600 text-white px-4 py-2 rounded flex-1">Send Reply</button>
+                <button id="closeReplyModalBtn" class="bg-gray-500 text-white px-4 py-2 rounded flex-1">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = '/api/admin';
+        let currentTicketId = null;
+        
+        // Check if user is admin
+        async function checkAdmin() {
+            const token = localStorage.getItem('authToken');
+            const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            if (!token || user.role !== 'admin') {
+                window.location.href = '/';
+            }
+            loadDashboard();
+        }
+        
+        async function loadDashboard() {
+            await loadUsers();
+            await loadWithdrawals();
+            await loadDeposits();
+            await loadInvestmentPlans();
+            await loadAnnouncements();
+            await loadTickets();
+            loadStats();
+        }
+        
+        async function loadUsers() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const userList = Object.values(users);
+            document.getElementById('usersList').innerHTML = userList.map(u => `
+                <tr class="border-b">
+                    <td class="p-2">${u.name}</td>
+                    <td class="p-2">${u.email}</td>
+                    <td class="p-2"><span class="px-2 py-1 rounded text-xs ${u.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">${u.role}</span></td>
+                    <td class="p-2">$${(u.realBalance || 0).toFixed(2)}</td>
+                    <td class="p-2"><span class="px-2 py-1 rounded text-xs ${u.kycStatus === 'verified' ? 'bg-green-100 text-green-800' : u.kycStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}">${u.kycStatus || 'unverified'}</span></td>
+                    <td class="p-2">
+                        <button onclick="updateUserBalance('${u.email}', 'add')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">+ Add</button>
+                        <button onclick="updateUserBalance('${u.email}', 'remove')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">- Remove</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        async function loadWithdrawals() {
+            const withdrawals = JSON.parse(localStorage.getItem('withdrawals') || '[]');
+            const pending = withdrawals.filter(w => w.status === 'pending');
+            document.getElementById('withdrawalsList').innerHTML = pending.length ? pending.map(w => `
+                <div class="border rounded p-3 flex justify-between items-center">
+                    <div>
+                        <div class="font-bold">$${w.amount} - ${w.method}</div>
+                        <div class="text-sm text-gray-600">User: ${w.userId} | Details: ${w.details}</div>
+                        <div class="text-xs text-gray-500">${new Date(w.createdAt).toLocaleString()}</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="approveWithdrawal('${w.id}')" class="bg-green-600 text-white px-3 py-1 rounded text-sm">Approve</button>
+                        <button onclick="rejectWithdrawal('${w.id}')" class="bg-red-600 text-white px-3 py-1 rounded text-sm">Reject</button>
+                    </div>
+                </div>
+            `).join('') : '<div class="text-center text-gray-500 py-4">No pending withdrawals</div>';
+        }
+        
+        async function loadDeposits() {
+            const deposits = JSON.parse(localStorage.getItem('deposits') || '[]');
+            const pending = deposits.filter(d => d.status === 'pending');
+            document.getElementById('depositsList').innerHTML = pending.length ? pending.map(d => `
+                <div class="border rounded p-3 flex justify-between items-center">
+                    <div>
+                        <div class="font-bold">$${d.amount} - ${d.method}</div>
+                        <div class="text-sm text-gray-600">Reference: ${d.checkoutRequestId || 'N/A'}</div>
+                        <div class="text-xs text-gray-500">${new Date(d.createdAt).toLocaleString()}</div>
+                    </div>
+                    <button onclick="approveDeposit('${d.id}')" class="bg-green-600 text-white px-3 py-1 rounded text-sm">Approve</button>
+                </div>
+            `).join('') : '<div class="text-center text-gray-500 py-4">No pending deposits</div>';
+        }
+        
+        async function loadInvestmentPlans() {
+            const plans = JSON.parse(localStorage.getItem('investment_plans') || '[]');
+            document.getElementById('investmentPlansList').innerHTML = plans.map(p => `
+                <div class="border rounded p-3 flex justify-between items-center">
+                    <div>
+                        <div class="font-bold">${p.name}</div>
+                        <div class="text-sm">Amount: $${p.amount} | ROI: ${p.dailyROI}% | Duration: ${p.durationDays} days</div>
+                    </div>
+                    <button onclick="deletePlan('${p.id}')" class="bg-red-600 text-white px-3 py-1 rounded text-sm">Delete</button>
+                </div>
+            `).join('');
+        }
+        
+        async function loadAnnouncements() {
+            const announcements = JSON.parse(localStorage.getItem('announcements') || '[]');
+            document.getElementById('announcementsList').innerHTML = announcements.length ? announcements.map(a => `
+                <div class="border-b py-2">
+                    <div class="font-bold">${a.title}</div>
+                    <div class="text-sm">${a.content}</div>
+                    <div class="text-xs text-gray-500">${new Date(a.createdAt).toLocaleString()}</div>
+                </div>
+            `).join('') : '<div class="text-center text-gray-500 py-4">No announcements</div>';
+        }
+        
+        async function loadTickets() {
+            const tickets = JSON.parse(localStorage.getItem('tickets') || '[]');
+            const openTickets = tickets.filter(t => t.status === 'open');
+            document.getElementById('ticketsList').innerHTML = openTickets.length ? openTickets.map(t => `
+                <div class="border rounded p-3">
+                    <div class="flex justify-between">
+                        <span class="font-bold">${t.subject}</span>
+                        <button onclick="openReplyModal('${t.id}', '${t.subject}')" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm">Reply</button>
+                    </div>
+                    <div class="text-sm mt-1">${t.message}</div>
+                    <div class="text-xs text-gray-500 mt-1">From: ${t.userId} | ${new Date(t.createdAt).toLocaleString()}</div>
+                </div>
+            `).join('') : '<div class="text-center text-gray-500 py-4">No open tickets</div>';
+        }
+        
+        function loadStats() {
+            const users = Object.values(JSON.parse(localStorage.getItem('users') || '{}'));
+            const withdrawals = JSON.parse(localStorage.getItem('withdrawals') || '[]');
+            const deposits = JSON.parse(localStorage.getItem('deposits') || '[]');
+            
+            document.getElementById('totalUsers').innerText = users.length;
+            document.getElementById('pendingWithdrawals').innerText = withdrawals.filter(w => w.status === 'pending').length;
+            document.getElementById('pendingDeposits').innerText = deposits.filter(d => d.status === 'pending').length;
+            
+            const trades = JSON.parse(localStorage.getItem('trades') || '[]');
+            const totalVolume = trades.reduce((sum, t) => sum + (t.stake || 0), 0);
+            document.getElementById('totalVolume').innerText = `$${totalVolume.toFixed(2)}`;
+        }
+        
+        // Admin actions
+        window.updateUserBalance = (email, action) => {
+            const amount = prompt(`Enter amount to ${action === 'add' ? 'add' : 'remove'} (USD):`);
+            if (!amount) return;
+            
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            if (users[email]) {
+                const numAmount = parseFloat(amount);
+                if (action === 'add') {
+                    users[email].realBalance = (users[email].realBalance || 0) + numAmount;
+                } else {
+                    users[email].realBalance = Math.max(0, (users[email].realBalance || 0) - numAmount);
+                }
+                localStorage.setItem('users', JSON.stringify(users));
+                showToast(`Updated ${users[email].name}'s balance`);
+                loadUsers();
+            }
+        };
+        
+        window.approveWithdrawal = (id) => {
+            const withdrawals = JSON.parse(localStorage.getItem('withdrawals') || '[]');
+            const index = withdrawals.findIndex(w => w.id === id);
+            if (index !== -1) {
+                withdrawals[index].status = 'completed';
+                localStorage.setItem('withdrawals', JSON.stringify(withdrawals));
+                showToast('Withdrawal approved');
+                loadWithdrawals();
+                loadStats();
+            }
+        };
+        
+        window.rejectWithdrawal = (id) => {
+            const withdrawals = JSON.parse(localStorage.getItem('withdrawals') || '[]');
+            const index = withdrawals.findIndex(w => w.id === id);
+            if (index !== -1) {
+                withdrawals[index].status = 'rejected';
+                localStorage.setItem('withdrawals', JSON.stringify(withdrawals));
+                showToast('Withdrawal rejected');
+                loadWithdrawals();
+            }
+        };
+        
+        window.approveDeposit = (id) => {
+            const deposits = JSON.parse(localStorage.getItem('deposits') || '[]');
+            const index = deposits.findIndex(d => d.id === id);
+            if (index !== -1) {
+                deposits[index].status = 'completed';
+                localStorage.setItem('deposits', JSON.stringify(deposits));
+                
+                // Add to user balance
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                const user = Object.values(users).find(u => u.id === deposits[index].userId);
+                if (user) {
+                    user.realBalance = (user.realBalance || 0) + deposits[index].amount;
+                    users[user.email] = user;
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
+                
+                showToast('Deposit approved and credited');
+                loadDeposits();
+                loadStats();
+                loadUsers();
+            }
+        };
+        
+        window.deletePlan = (id) => {
+            let plans = JSON.parse(localStorage.getItem('investment_plans') || '[]');
+            plans = plans.filter(p => p.id !== id);
+            localStorage.setItem('investment_plans', JSON.stringify(plans));
+            loadInvestmentPlans();
+            showToast('Plan deleted');
+        };
+        
+        window.openReplyModal = (ticketId, subject) => {
+            currentTicketId = ticketId;
+            document.getElementById('ticketInfo').innerHTML = `<strong>Ticket:</strong> ${subject}`;
+            document.getElementById('replyTicketModal').classList.remove('hidden');
+            document.getElementById('replyTicketModal').style.display = 'flex';
+        };
+        
+        function sendReply() {
+            const reply = document.getElementById('replyMessage').value;
+            if (!reply) return;
+            
+            const tickets = JSON.parse(localStorage.getItem('tickets') || '[]');
+            const index = tickets.findIndex(t => t.id === currentTicketId);
+            if (index !== -1) {
+                tickets[index].status = 'closed';
+                tickets[index].adminReply = reply;
+                tickets[index].resolvedAt = new Date().toISOString();
+                localStorage.setItem('tickets', JSON.stringify(tickets));
+                showToast('Reply sent and ticket closed');
+                closeReplyModal();
+                loadTickets();
+            }
+        }
+        
+        function closeReplyModal() {
+            document.getElementById('replyTicketModal').classList.add('hidden');
+            document.getElementById('replyTicketModal').style.display = 'none';
+            document.getElementById('replyMessage').value = '';
+            currentTicketId = null;
+        }
+        
+        // Announcement
+        document.getElementById('postAnnouncementBtn').onclick = () => {
+            const content = document.getElementById('newAnnouncement').value;
+            if (!content) return;
+            
+            const announcements = JSON.parse(localStorage.getItem('announcements') || '[]');
+            announcements.unshift({
+                id: Date.now().toString(),
+                title: 'New Announcement',
+                content: content,
+                createdAt: new Date().toISOString()
+            });
+            localStorage.setItem('announcements', JSON.stringify(announcements));
+            document.getElementById('newAnnouncement').value = '';
+            loadAnnouncements();
+            showToast('Announcement posted');
+        };
+        
+        // Investment Plan Modal
+        document.getElementById('addPlanBtn').onclick = () => {
+            document.getElementById('addPlanModal').classList.remove('hidden');
+            document.getElementById('addPlanModal').style.display = 'flex';
+        };
+        
+        document.getElementById('savePlanBtn').onclick = () => {
+            const name = document.getElementById('planName').value;
+            const amount = parseFloat(document.getElementById('planAmount').value);
+            const roi = parseFloat(document.getElementById('planROI').value);
+            const duration = parseInt(document.getElementById('planDuration').value);
+            
+            if (!name || !amount || !roi || !duration) {
+                showToast('All fields required', true);
+                return;
+            }
+            
+            const plans = JSON.parse(localStorage.getItem('investment_plans') || '[]');
+            plans.push({
+                id: Date.now().toString(),
+                name,
+                amount,
+                dailyROI: roi,
+                durationDays: duration,
+                imageUrl: ''
+            });
+            localStorage.setItem('investment_plans', JSON.stringify(plans));
+            showToast('Plan added');
+            closePlanModal();
+            loadInvestmentPlans();
+        };
+        
+        function closePlanModal() {
+            document.getElementById('addPlanModal').classList.add('hidden');
+            document.getElementById('addPlanModal').style.display = 'none';
+            document.getElementById('planName').value = '';
+            document.getElementById('planAmount').value = '';
+            document.getElementById('planROI').value = '';
+            document.getElementById('planDuration').value = '';
+        }
+        
+        document.getElementById('closePlanModalBtn').onclick = closePlanModal;
+        document.getElementById('sendReplyBtn').onclick = sendReply;
+        document.getElementById('closeReplyModalBtn').onclick = closeReplyModal;
+        
+        function showToast(msg, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg text-white ${isError ? 'bg-red-600' : 'bg-green-600'} z-50`;
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = () => {
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('active', 'text-indigo-600', 'border-indigo-600');
+                    b.classList.add('text-gray-600');
+                });
+                btn.classList.add('active', 'text-indigo-600', 'border-indigo-600');
+                btn.classList.remove('text-gray-600');
+                
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+                document.getElementById(`${tab}Tab`).classList.remove('hidden');
+            };
+        });
+        
+        checkAdmin();
+    </script>
+</body>
+</html>
