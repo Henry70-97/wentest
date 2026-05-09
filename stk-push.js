@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  // Enable CORS
+  // Enable CORS for browser requests
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -8,11 +8,13 @@ export default async function handler(req, res) {
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   );
 
+  // Handle preflight
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
 
+  // Only POST allowed
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -21,12 +23,12 @@ export default async function handler(req, res) {
 
   // Validation
   if (!phoneNumber || !amount || !accountReference) {
-    return res.status(400).json({ 
-      error: 'Missing required fields: phoneNumber, amount, accountReference' 
+    return res.status(400).json({
+      error: 'Missing required fields: phoneNumber, amount, accountReference'
     });
   }
 
-  // Format phone number (remove 0 or +254 and add 254)
+  // Format Kenyan phone number to 254XXXXXXXXX
   let formattedPhone = phoneNumber.toString().trim();
   if (formattedPhone.startsWith('0')) {
     formattedPhone = '254' + formattedPhone.substring(1);
@@ -34,6 +36,12 @@ export default async function handler(req, res) {
     formattedPhone = formattedPhone.substring(1);
   } else if (!formattedPhone.startsWith('254')) {
     formattedPhone = '254' + formattedPhone;
+  }
+
+  // Validate amount is positive number
+  const numericAmount = Number(amount);
+  if (isNaN(numericAmount) || numericAmount <= 0) {
+    return res.status(400).json({ error: 'Amount must be a positive number' });
   }
 
   try {
@@ -45,7 +53,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         phoneNumber: formattedPhone,
-        amount: Number(amount),
+        amount: numericAmount,
         accountReference: accountReference,
         transactionDesc: transactionDesc || 'Payment',
       }),
@@ -54,9 +62,11 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || 'STK push failed');
+      // Lipana.dev returns error details in `message` or `error`
+      throw new Error(data.message || data.error || 'STK push failed');
     }
 
+    // Success response
     res.status(200).json({
       success: true,
       data: data,
